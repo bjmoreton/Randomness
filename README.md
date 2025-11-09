@@ -19,6 +19,13 @@
           - [Installation](#installation)
           - [Usage](#usage)
           - [Examples](#examples)
+    - [Python](#python)
+      - [colors.py](#colorspy)
+          - [Description](#description-2)
+          - [Features](#features-1)
+          - [Installation](#installation-1)
+          - [Usage](#usage-1)
+          - [Examples](#examples-1)
 
 ---
 
@@ -97,4 +104,72 @@ Using alias:
 Display current directory and depth:
 ```powershell
 cdnum
+```
+
+### Python
+
+#### colors.py
+
+###### Description
+A Python module providing ANSI color codes for terminal text and background styling.  
+Supports standard colors, bright variants, 256-color mode, and blink effects.  
+Includes functions to parse custom color codes in strings and print colored output.
+
+###### Features
+
+- Standard and bright text colors.  
+- Standard and bright background colors.  
+- Blink effect support.  
+- 256-color foreground and background support.  
+- Parse custom placeholders (e.g., `&r` for bright red, `}&lt;number&gt;` for 256-color).  
+- `print_color()` function for easy terminal output.
+
+###### Installation
+
+Place `colors.py` in your project directory or a folder in your Python PATH.  
+Import the module in your scripts:
+
+```python
+from colors import Colors, parse_colors, print_color
+```
+
+###### Usage
+Parse and print colored text:
+
+```python
+from colors import print_color
+
+# Parse and print a string with custom codes
+print_color("&rThis is bright red text&~")
+
+# Use 256-color codes
+print_color("This is }196 red text")
+```
+
+Directly use Colors constants:
+
+```python
+from colors import Colors
+
+print(f"{Colors.brightGreen}This text is bright green{Colors.reset}")
+print(f"{Colors.bgColor256(214)}This background is bright orange{Colors.reset}")
+```
+
+###### Examples
+
+Basic usage:
+
+```python
+from colors import print_color
+
+print_color("&BBlue text&~ and &Yyellow text&~")
+print_color("Custom 256-color }42 greenish text&~")
+```
+
+Combining foreground and background:
+
+```python
+from colors import Colors
+
+print(f"{Colors.brightWhite}{Colors.bgRed}White on red background{Colors.reset}")
 ```
