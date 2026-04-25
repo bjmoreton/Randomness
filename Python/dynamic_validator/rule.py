@@ -1,13 +1,13 @@
 """
-utils/dynamic_validator/rule.py
-
-This module defines the Rule class, which represents a single validation rule.
+Why: Defines the building block of our validation system — a single named rule with
+     a check function and an error message for when it fails.
+How: The Rule class wraps a callable (sync or async) and provides validate() and negate() methods.
 """
 
 import inspect
 from typing import Awaitable, Callable, Dict, Generic, TypeVar, Union
 
-T = TypeVar("T")
+T = TypeVar('T')
 
 
 class Rule(Generic[T]):
@@ -45,7 +45,7 @@ class Rule(Generic[T]):
         # Pass kwargs as a single dict
         return self.check(value, **kwargs)
 
-    def negate(self, message: str = None) -> "Rule[T]":
+    def negate(self, message: str = None) -> 'Rule[T]':
         """
         Create a new Rule that is the negation of this rule.
 
@@ -55,7 +55,7 @@ class Rule(Generic[T]):
         Returns:
             Rule[T]: A new rule with negated logic.
         """
-        msg = message or f"NOT({self.name}): {self.error_message}"
+        msg = message or f'NOT({self.name}): {self.error_message}'
 
         if inspect.iscoroutinefunction(self.check):
 
@@ -67,7 +67,7 @@ class Rule(Generic[T]):
             def negated_check(v, ctx):
                 return not self.check(v, ctx)
 
-        return Rule(name=f"not_{self.name}", check=negated_check, error_message=msg)
+        return Rule(name=f'not_{self.name}', check=negated_check, error_message=msg)
 
     def __invert__(self):
         """Allow using the ~ operator to negate a rule."""

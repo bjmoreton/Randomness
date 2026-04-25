@@ -1,9 +1,8 @@
 """
-utils/dynamic_validator/dynamic_validator.py
-
-This module defines the DynamicValidator class, which orchestrates the validation process.
-It allows adding rules, removing rules, and validating values against those rules
-using various strategies (all, any, one). It handles both sync and async rules transparently.
+Why: Provides an isolated mechanism for validating form payloads across Stakkir's modules.
+How: Accepts an incoming value and cascades it through registered rules, accumulating
+     any validation failures. Supports both sync and async rule functions, and offers
+     multiple validation strategies (all, any, one_of).
 """
 
 import asyncio
@@ -22,12 +21,10 @@ from typing import (
     overload,
 )
 
-from utils import logger
-
 from .rule import Rule
 from .validation_error import ValidationError
 
-T = TypeVar("T")
+T = TypeVar('T')
 
 
 class DynamicValidator(Generic[T]):
@@ -47,7 +44,7 @@ class DynamicValidator(Generic[T]):
 
     # --- Rule management ---
     @overload
-    def add_rule(self, rule: Rule[T]) -> "DynamicValidator": ...
+    def add_rule(self, rule: Rule[T]) -> 'DynamicValidator': ...
 
     @overload
     def add_rule(
@@ -55,7 +52,7 @@ class DynamicValidator(Generic[T]):
         name: str,
         check: Callable[[T, Dict], Union[bool, Awaitable[bool]]],
         error_message: str,
-    ) -> "DynamicValidator": ...
+    ) -> 'DynamicValidator': ...
 
     def add_rule(self, *args):
         """
@@ -79,7 +76,7 @@ class DynamicValidator(Generic[T]):
             name, check, error_message = args
             rule = Rule(name=name, check=check, error_message=error_message)
         else:
-            raise TypeError("Invalid arguments to add_rule")
+            raise TypeError('Invalid arguments to add_rule')
         if any(r.name == rule.name for r in self.rules):
             raise ValueError(f"Rule '{rule.name}' already exists")
         self.rules.append(rule)
@@ -157,13 +154,13 @@ class DynamicValidator(Generic[T]):
         async def runner():
             passed, errors = await self._validate_rules(rules, value, **kwargs)
 
-            if method in ("is_valid", "all"):
+            if method in ('is_valid', 'all'):
                 return len(errors) == 0, errors
 
-            elif method == "any":
+            elif method == 'any':
                 return passed > 0, errors
 
-            elif method == "one":
+            elif method == 'one':
                 if passed == 1:
                     return True, errors
                 elif passed == 0:
@@ -171,10 +168,10 @@ class DynamicValidator(Generic[T]):
                 else:
                     return False, [
                         ValidationError(
-                            rule="one_of",
-                            message=f"Expected exactly one rule to pass, but {passed} passed.",
+                            rule='one_of',
+                            message=f'Expected exactly one rule to pass, but {passed} passed.',
                             value=value,
-                            context={"rules": [r.name for r in rules]},
+                            context={'rules': [r.name for r in rules]},
                         )
                     ]
 
@@ -186,39 +183,47 @@ class DynamicValidator(Generic[T]):
         return asyncio.run(runner())
 
     # --- Public API ---
-    def is_valid(self, value: Any, **kwargs) -> Union[
+    def is_valid(
+        self, value: Any, **kwargs
+    ) -> Union[
         Tuple[bool, List[ValidationError]],
         Awaitable[Tuple[bool, List[ValidationError]]],
     ]:
         """Check if all rules pass."""
-        return self._maybe_async(self.rules, value, "is_valid", **kwargs)
+        return self._maybe_async(self.rules, value, 'is_valid', **kwargs)
 
-    def all_of(self, rule_names: List[str], value: Any, **kwargs) -> Union[
+    def all_of(
+        self, rule_names: List[str], value: Any, **kwargs
+    ) -> Union[
         Tuple[bool, List[ValidationError]],
         Awaitable[Tuple[bool, List[ValidationError]]],
     ]:
         """Check if all specified rules pass."""
         rules = self._resolve_rules(rule_names) if rule_names else self.rules
-        return self._maybe_async(rules, value, "all", **kwargs)
+        return self._maybe_async(rules, value, 'all', **kwargs)
 
-    def any_of(self, rule_names: List[str], value: Any, **kwargs) -> Union[
+    def any_of(
+        self, rule_names: List[str], value: Any, **kwargs
+    ) -> Union[
         Tuple[bool, List[ValidationError]],
         Awaitable[Tuple[bool, List[ValidationError]]],
     ]:
         """Check if at least one of the specified rules passes."""
         rules = self._resolve_rules(rule_names) if rule_names else self.rules
-        return self._maybe_async(rules, value, "any", **kwargs)
+        return self._maybe_async(rules, value, 'any', **kwargs)
 
-    def one_of(self, rule_names: List[str], value: Any, **kwargs) -> Union[
+    def one_of(
+        self, rule_names: List[str], value: Any, **kwargs
+    ) -> Union[
         Tuple[bool, List[ValidationError]],
         Awaitable[Tuple[bool, List[ValidationError]]],
     ]:
         """Check if exactly one of the specified rules passes."""
         rules = self._resolve_rules(rule_names) if rule_names else self.rules
-        return self._maybe_async(rules, value, "one", **kwargs)
+        return self._maybe_async(rules, value, 'one', **kwargs)
 
     def __call__(
-        self, value: Any, method: str = "all", rule_names: List[str] = None, **kwargs
+        self, value: Any, method: str = 'all', rule_names: List[str] = None, **kwargs
     ) -> Union[
         Tuple[bool, List[ValidationError]],
         Awaitable[Tuple[bool, List[ValidationError]]],

@@ -1,12 +1,12 @@
 """
-utils/dynamic_validator/validation_error.py
-
-This module defines the ValidationError model used to report validation failures.
+Why: Gives our validation system a standardized error model so the UI knows
+     exactly which rule failed and what the error message is.
+How: A Pydantic model containing the rule name, error message, and validation context.
 """
 
 from typing import Any, Dict
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ValidationError(BaseModel):
@@ -21,4 +21,4 @@ class ValidationError(BaseModel):
 
     rule: str
     message: str
-    context: Dict[str, Any]  # kwargs passed to validator
+    context: Dict[str, Any] = Field(exclude=True)  # kwargs passed to validator
